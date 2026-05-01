@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,6 +13,10 @@ import (
 	"github.com/ksaifullah/go-cli-k8s-manifest-label-validator/internal/manifest"
 	"github.com/ksaifullah/go-cli-k8s-manifest-label-validator/internal/validator"
 )
+
+// ErrValidationFailed is returned when one or more label violations are found.
+// The caller should exit with code 1 when this error is returned.
+var ErrValidationFailed = errors.New("label validation failed")
 
 // validateCmd represents the validate command.
 var validateCmd = &cobra.Command{
@@ -86,8 +91,9 @@ func runValidate(cmd *cobra.Command, args []string) error {
 	}
 	fmt.Fprintf(cmd.OutOrStderr(), "\n%d violation(s) found in %d resource(s)\n",
 		len(result.Violations), len(resources))
-	os.Exit(1)
-	return nil
+	// Suppress cobra's usage output: validation failures are not usage errors.
+	cmd.SilenceUsage = true
+	return ErrValidationFailed
 }
 
 // loadPath loads resources from a file or recursively from a directory.
