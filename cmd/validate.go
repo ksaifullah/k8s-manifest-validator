@@ -12,13 +12,15 @@ import (
 // validateCmd represents the validate command
 var validateCmd = &cobra.Command{
 	Use:   "validate",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Validate Kubernetes manifests for MegaTech cost centre labels",
+	Long: `Validates Kubernetes manifests for the required MegaTech cost centre label (metadata.megatech.inc/cost-centre).
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Reads manifests from stdin, supports multiple YAML documents, and checks each resource for:
+  - Presence of the required label
+  - Correct format: CC-NNN-YYYY (NNN: 050-150, YYYY: current year)
+  - Valid cost centre range and year
+
+Outputs a summary of total, valid, and invalid resources, with details of any validation errors.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("validate called")
 	},

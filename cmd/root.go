@@ -12,13 +12,10 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "go-cli-k8s-manifest-label-validator",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "A simple Go CLI for validating Kubernetes manifests (Cobra-based)",
+	Long: `go-cli-k8s-manifest-label-validator is a command-line tool built with Cobra for validating Kubernetes manifests at MegaTech.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Use the 'validate' command to check manifests for required cost centre labels and compliance with MegaTech policies.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
