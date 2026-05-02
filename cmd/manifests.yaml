@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    metadata.megatech.inc/cost-centre: CC-071-2025
+  name: payments-service
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    metadata.megatech.inc/cost-centre: CC-071-2024
+  name: payments-service
+  namespace: payments-service
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: notification-service
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    metadata.megatech.inc/cost-centre: CC-113-2025
+  namespace: notification-service

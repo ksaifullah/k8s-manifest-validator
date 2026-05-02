@@ -5,7 +5,9 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
+	"github.com/ksaifullah/go-cli-k8s-manifest-label-validator/internal/validator"
 	"github.com/spf13/cobra"
 )
 
@@ -21,8 +23,35 @@ Reads manifests from stdin, supports multiple YAML documents, and checks each re
   - Valid cost centre range and year
 
 Outputs a summary of total, valid, and invalid resources, with details of any validation errors.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("validate called")
+	RunE: func(cmd *cobra.Command, args []string) error {
+		// silence usage output on runtime errors so only the error message is shown
+		cmd.SilenceUsage = true
+
+		result, err := validator.Validate(os.Stdin, 0)
+		if err != nil {
+			return fmt.Errorf("reading manifests: %w", err)
+		}
+
+		for _, r := range result.Resources {
+			if r.Valid() {
+				fmt.Printf("  VALID    %s\n", r.Identity)
+			} else {
+				fmt.Printf("  INVALID  %s\n", r.Identity)
+				for _, e := range r.Errors {
+					fmt.Printf("           - %s\n", e)
+				}
+			}
+		}
+
+		fmt.Printf("\nSummary:\n")
+		fmt.Printf("  Total:   %d\n", result.Total())
+		fmt.Printf("  Valid:   %d\n", result.ValidCount())
+		fmt.Printf("  Invalid: %d\n", result.InvalidCount())
+
+		if result.InvalidCount() > 0 {
+			os.Exit(1)
+		}
+		return nil
 	},
 }
 
