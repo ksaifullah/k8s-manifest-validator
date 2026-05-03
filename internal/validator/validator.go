@@ -2,12 +2,11 @@ package validator
 
 import (
 	"fmt"
-	"io"
 	"regexp"
 	"strconv"
 	"time"
 
-	"gopkg.in/yaml.v3"
+	"github.com/ksaifullah/go-cli-k8s-manifest-label-validator/internal/manifest"
 )
 
 // LabelKey is the required MegaTech cost centre label.
@@ -15,27 +14,6 @@ const LabelKey = "metadata.megatech.inc/cost-centre"
 
 // labelPattern matches the required format CC-NNN-YYYY.
 var labelPattern = regexp.MustCompile(`^CC-(\d{3})-(\d{4})$`)
-
-// resource is a minimal representation of a Kubernetes resource used for label validation.
-type resource struct {
-	APIVersion string   `yaml:"apiVersion"`
-	Kind       string   `yaml:"kind"`
-	Metadata   metadata `yaml:"metadata"`
-}
-
-// identity returns a human-readable identifier for the resource.
-func (r resource) identity() string {
-	if r.Metadata.Namespace != "" {
-		return fmt.Sprintf("%s/%s/%s/%s", r.APIVersion, r.Kind, r.Metadata.Namespace, r.Metadata.Name)
-	}
-	return fmt.Sprintf("%s/%s/%s", r.APIVersion, r.Kind, r.Metadata.Name)
-}
-
-type metadata struct {
-	Name      string            `yaml:"name"`
-	Namespace string            `yaml:"namespace"`
-	Labels    map[string]string `yaml:"labels"`
-}
 
 // ResourceResult holds the validation outcome for a single Kubernetes resource.
 type ResourceResult struct {
@@ -72,45 +50,30 @@ func (r Result) InvalidCount() int {
 	return r.Total() - r.ValidCount()
 }
 
-// Validate reads YAML documents from r and validates each Kubernetes resource for the
-// required MegaTech cost centre label. year is the expected cost centre year; pass 0
-// to use the current calendar year.
-func Validate(r io.Reader, year int) (Result, error) {
+// Validate checks each manifest in the provided slice for the required MegaTech
+// cost centre label. year is the expected cost centre year; pass 0 to use the
+// current calendar year.
+func Validate(manifests []manifest.Manifest, year int) Result {
 	if year == 0 {
 		year = time.Now().Year()
 	}
 
-	decoder := yaml.NewDecoder(r)
 	var result Result
 
-	for {
-		var res resource
-		err := decoder.Decode(&res)
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return result, fmt.Errorf("parsing YAML: %w", err)
-		}
-
-		// skip empty documents (e.g. trailing --- with no content)
-		if res.APIVersion == "" && res.Kind == "" {
-			continue
-		}
-
-		errs := validateResource(res, year)
+	for _, m := range manifests {
+		errs := validateResource(m, year)
 		result.Resources = append(result.Resources, ResourceResult{
-			Identity: res.identity(),
+			Identity: m.Identity(),
 			Errors:   errs,
 		})
 	}
 
-	return result, nil
+	return result
 }
 
-// validateResource checks a single resource for the required cost centre label and its validity.
-func validateResource(r resource, year int) []string {
-	labelValue, ok := r.Metadata.Labels[LabelKey]
+// validateResource checks a single manifest for the required cost centre label and its validity.
+func validateResource(m manifest.Manifest, year int) []string {
+	labelValue, ok := m.Metadata.Labels[LabelKey]
 	if !ok {
 		return []string{fmt.Sprintf("missing required label %q", LabelKey)}
 	}

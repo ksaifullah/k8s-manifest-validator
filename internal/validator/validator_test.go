@@ -3,32 +3,34 @@ package validator
 import (
 	"strings"
 	"testing"
+
+	"github.com/ksaifullah/go-cli-k8s-manifest-label-validator/internal/manifest"
 )
 
 const testYear = 2026
 
 func Test_validateResource_valid(t *testing.T) {
-	r := resource{
+	m := manifest.Manifest{
 		APIVersion: "v1",
 		Kind:       "Namespace",
-		Metadata: metadata{
+		Metadata: manifest.Metadata{
 			Name:   "payments-service",
 			Labels: map[string]string{LabelKey: "CC-071-2026"},
 		},
 	}
-	errs := validateResource(r, testYear)
+	errs := validateResource(m, testYear)
 	if len(errs) != 0 {
 		t.Errorf("expected no errors, got: %v", errs)
 	}
 }
 
 func Test_validateResource_missingLabel(t *testing.T) {
-	r := resource{
+	m := manifest.Manifest{
 		APIVersion: "v1",
 		Kind:       "Namespace",
-		Metadata:   metadata{Name: "payments-service"},
+		Metadata:   manifest.Metadata{Name: "payments-service"},
 	}
-	errs := validateResource(r, testYear)
+	errs := validateResource(m, testYear)
 	if len(errs) != 1 {
 		t.Fatalf("expected 1 error, got %d: %v", len(errs), errs)
 	}
@@ -52,15 +54,15 @@ func Test_validateResource_invalidFormat(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			r := resource{
+			m := manifest.Manifest{
 				APIVersion: "v1",
 				Kind:       "Namespace",
-				Metadata: metadata{
+				Metadata: manifest.Metadata{
 					Name:   "test",
 					Labels: map[string]string{LabelKey: tc.value},
 				},
 			}
-			errs := validateResource(r, testYear)
+			errs := validateResource(m, testYear)
 			if len(errs) != 1 {
 				t.Fatalf("expected 1 error for value %q, got %d: %v", tc.value, len(errs), errs)
 			}
@@ -86,15 +88,15 @@ func Test_validateResource_nnnBoundaries(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			r := resource{
+			m := manifest.Manifest{
 				APIVersion: "v1",
 				Kind:       "Namespace",
-				Metadata: metadata{
+				Metadata: manifest.Metadata{
 					Name:   "test",
 					Labels: map[string]string{LabelKey: tc.value},
 				},
 			}
-			errs := validateResource(r, testYear)
+			errs := validateResource(m, testYear)
 			gotErr := false
 			for _, e := range errs {
 				if strings.Contains(e, "out of valid range") {
@@ -109,15 +111,15 @@ func Test_validateResource_nnnBoundaries(t *testing.T) {
 }
 
 func Test_validateResource_wrongYear(t *testing.T) {
-	r := resource{
+	m := manifest.Manifest{
 		APIVersion: "v1",
 		Kind:       "Namespace",
-		Metadata: metadata{
+		Metadata: manifest.Metadata{
 			Name:   "test",
 			Labels: map[string]string{LabelKey: "CC-071-2025"},
 		},
 	}
-	errs := validateResource(r, testYear)
+	errs := validateResource(m, testYear)
 	if len(errs) != 1 {
 		t.Fatalf("expected 1 error, got %d: %v", len(errs), errs)
 	}
@@ -128,46 +130,47 @@ func Test_validateResource_wrongYear(t *testing.T) {
 
 func Test_validateResource_multipleErrors(t *testing.T) {
 	// NNN out of range AND wrong year — both errors should be reported
-	r := resource{
+	m := manifest.Manifest{
 		APIVersion: "v1",
 		Kind:       "Namespace",
-		Metadata: metadata{
+		Metadata: manifest.Metadata{
 			Name:   "test",
 			Labels: map[string]string{LabelKey: "CC-200-2024"},
 		},
 	}
-	errs := validateResource(r, testYear)
+	errs := validateResource(m, testYear)
 	if len(errs) != 2 {
 		t.Fatalf("expected 2 errors, got %d: %v", len(errs), errs)
 	}
 }
 
-func Test_Validate_multipleDocuments(t *testing.T) {
-	input := `apiVersion: v1
-kind: Namespace
-metadata:
-  labels:
-    metadata.megatech.inc/cost-centre: CC-071-2026
-  name: valid-ns
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  labels:
-    metadata.megatech.inc/cost-centre: CC-071-2024
-  name: invalid-sa
-  namespace: some-ns
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: missing-label-ns
-`
-
-	result, err := Validate(strings.NewReader(input), testYear)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+func Test_Validate_multipleManifests(t *testing.T) {
+	manifests := []manifest.Manifest{
+		{
+			APIVersion: "v1",
+			Kind:       "Namespace",
+			Metadata: manifest.Metadata{
+				Name:   "valid-ns",
+				Labels: map[string]string{LabelKey: "CC-071-2026"},
+			},
+		},
+		{
+			APIVersion: "v1",
+			Kind:       "ServiceAccount",
+			Metadata: manifest.Metadata{
+				Name:      "invalid-sa",
+				Namespace: "some-ns",
+				Labels:    map[string]string{LabelKey: "CC-071-2024"},
+			},
+		},
+		{
+			APIVersion: "v1",
+			Kind:       "Namespace",
+			Metadata:   manifest.Metadata{Name: "missing-label-ns"},
+		},
 	}
+
+	result := Validate(manifests, testYear)
 
 	if result.Total() != 3 {
 		t.Errorf("expected 3 resources, got %d", result.Total())
@@ -189,39 +192,8 @@ metadata:
 	}
 }
 
-func Test_Validate_emptyDocumentsSkipped(t *testing.T) {
-	// leading/trailing --- produce empty documents that should be skipped
-	input := `---
-apiVersion: v1
-kind: Namespace
-metadata:
-  labels:
-    metadata.megatech.inc/cost-centre: CC-100-2026
-  name: test-ns
----
-`
-	result, err := Validate(strings.NewReader(input), testYear)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if result.Total() != 1 {
-		t.Errorf("expected 1 resource, got %d", result.Total())
-	}
-}
-
-func Test_Validate_invalidYAML(t *testing.T) {
-	input := `this: is: not: valid: yaml: :`
-	_, err := Validate(strings.NewReader(input), testYear)
-	if err == nil {
-		t.Error("expected error for invalid YAML, got nil")
-	}
-}
-
-func Test_Validate_emptyInput(t *testing.T) {
-	result, err := Validate(strings.NewReader(""), testYear)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+func Test_Validate_emptySlice(t *testing.T) {
+	result := Validate(nil, testYear)
 	if result.Total() != 0 {
 		t.Errorf("expected 0 resources, got %d", result.Total())
 	}

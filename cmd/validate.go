@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/ksaifullah/go-cli-k8s-manifest-label-validator/internal/manifest"
 	"github.com/ksaifullah/go-cli-k8s-manifest-label-validator/internal/validator"
 	"github.com/spf13/cobra"
 )
@@ -27,10 +28,12 @@ Outputs a summary of total, valid, and invalid resources, with details of any va
 		// silence usage output on runtime errors so only the error message is shown
 		cmd.SilenceUsage = true
 
-		result, err := validator.Validate(os.Stdin, 0)
+		manifests, err := manifest.Parse(os.Stdin)
 		if err != nil {
 			return fmt.Errorf("reading manifests: %w", err)
 		}
+
+		result := validator.Validate(manifests, 0)
 
 		for _, r := range result.Resources {
 			if r.Valid() {
