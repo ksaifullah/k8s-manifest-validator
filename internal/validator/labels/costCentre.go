@@ -9,7 +9,7 @@ import (
 	"github.com/ksaifullah/k8s-manifest-validator/internal/validator"
 )
 
-const labelKey = "metadata.megatech.inc/cost-centre"
+const costCentreLabelKey = "metadata.megatech.inc/cost-centre"
 
 var labelPattern = regexp.MustCompile(`^CC-(\d{3})-(\d{4})$`)
 
@@ -26,9 +26,9 @@ func CostCentreValidator(year int) validator.ValidatorFunc {
 
 // validate checks a single manifest for the required cost centre label and its validity.
 func validate(m manifest.Manifest, year int) []string {
-	labelValue, ok := m.Metadata.Labels[labelKey]
+	labelValue, ok := m.Metadata.Labels[costCentreLabelKey]
 	if !ok {
-		return []string{fmt.Sprintf("missing required label %q", labelKey)}
+		return []string{fmt.Sprintf("missing required label %q", costCentreLabelKey)}
 	}
 
 	matches := labelPattern.FindStringSubmatch(labelValue)

@@ -22,7 +22,7 @@ func makeManifest(name string, labels map[string]string) manifest.Manifest {
 
 func TestCostCentreValidator_valid(t *testing.T) {
 	v := CostCentreValidator(testYear)
-	m := makeManifest("test", map[string]string{labelKey: "CC-071-2026"})
+	m := makeManifest("test", map[string]string{costCentreLabelKey: "CC-071-2026"})
 	result := v(m)
 	if len(result.Errors) != 0 {
 		t.Errorf("expected no errors, got: %v", result.Errors)
@@ -57,7 +57,7 @@ func TestCostCentreValidator_invalidFormat(t *testing.T) {
 	v := CostCentreValidator(testYear)
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			m := makeManifest("test", map[string]string{labelKey: tc.value})
+			m := makeManifest("test", map[string]string{costCentreLabelKey: tc.value})
 			result := v(m)
 			if len(result.Errors) != 1 {
 				t.Fatalf("expected 1 error for value %q, got %d: %v", tc.value, len(result.Errors), result.Errors)
@@ -85,7 +85,7 @@ func TestCostCentreValidator_nnnBoundaries(t *testing.T) {
 	v := CostCentreValidator(testYear)
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			m := makeManifest("test", map[string]string{labelKey: tc.value})
+			m := makeManifest("test", map[string]string{costCentreLabelKey: tc.value})
 			result := v(m)
 			gotErr := false
 			for _, e := range result.Errors {
@@ -102,7 +102,7 @@ func TestCostCentreValidator_nnnBoundaries(t *testing.T) {
 
 func TestCostCentreValidator_wrongYear(t *testing.T) {
 	v := CostCentreValidator(testYear)
-	m := makeManifest("test", map[string]string{labelKey: "CC-071-2025"})
+	m := makeManifest("test", map[string]string{costCentreLabelKey: "CC-071-2025"})
 	result := v(m)
 	if len(result.Errors) != 1 {
 		t.Fatalf("expected 1 error, got %d: %v", len(result.Errors), result.Errors)
@@ -115,7 +115,7 @@ func TestCostCentreValidator_wrongYear(t *testing.T) {
 func TestCostCentreValidator_multipleErrors(t *testing.T) {
 	// NNN out of range AND wrong year — both errors should be reported.
 	v := CostCentreValidator(testYear)
-	m := makeManifest("test", map[string]string{labelKey: "CC-200-2024"})
+	m := makeManifest("test", map[string]string{costCentreLabelKey: "CC-200-2024"})
 	result := v(m)
 	if len(result.Errors) != 2 {
 		t.Fatalf("expected 2 errors, got %d: %v", len(result.Errors), result.Errors)
