@@ -63,6 +63,13 @@ We expect:
 
 You do not need to build complex integration tests.
 
-## Evolution
+## Root Folders
 
-Update this instructions file as we make new assumptions and implement featurtes.
+- `cmd/`: Contains cobra command definitions
+- `internal/`: Contains business logic and helper functions
+
+## Business Logic Structure
+
+- `internal/manifest/`: Utilities for parsing Kubernetes manifests
+- `internal/validation/`: Utilities for validating Kubernetes manifests against business rules
+- `internal/validation/labels/`: Utilities for validating labels according to business requirements
