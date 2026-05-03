@@ -6,9 +6,11 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/ksaifullah/k8s-manifest-validator/internal/manifest"
 	"github.com/ksaifullah/k8s-manifest-validator/internal/validator"
+	"github.com/ksaifullah/k8s-manifest-validator/internal/validator/labels"
 	"github.com/spf13/cobra"
 )
 
@@ -33,7 +35,7 @@ Outputs a summary of total, valid, and invalid resources, with details of any va
 			return fmt.Errorf("reading manifests: %w", err)
 		}
 
-		result := validator.Validate(manifests, 0)
+		result := validator.Validate(manifests, []validator.ValidatorFunc{labels.CostCentreValidator(time.Now().Year())})
 
 		for _, r := range result.Resources {
 			if r.Valid() {
