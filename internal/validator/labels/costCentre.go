@@ -1,3 +1,4 @@
+// Package labels contains ValidatorFunc implementations for Kubernetes resource label checks.
 package labels
 
 import (

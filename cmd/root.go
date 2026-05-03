@@ -1,24 +1,27 @@
-/*
-Copyright © 2026 NAME HERE <khalid@outlook.com.au>
-*/
+// Package cmd contains the CLI commands for k8s-manifest-validator.
 package cmd
 
 import (
+	"errors"
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 )
 
-// rootCmd represents the base command when called without any subcommands
+// errValidationFailed is the sentinel returned by RunE when one or more resources
+// fail validation. Using a sentinel lets Execute() exit with code 1 without
+// printing a duplicate error message — the per-resource output is sufficient.
+var errValidationFailed = errors.New("validation failed")
+
+// rootCmd represents the base command when called without any subcommands.
 var rootCmd = &cobra.Command{
 	Use:   "k8s-manifest-validator",
-	Short: "A simple Go CLI for validating Kubernetes manifests (Cobra-based)",
-	Long: `k8s-manifest-validator is a command-line tool built with Cobra for validating Kubernetes manifests at MegaTech.
+	Short: "Validate Kubernetes manifests for MegaTech compliance",
+	Long: `k8s-manifest-validator is a command-line tool for validating Kubernetes manifests at MegaTech.
 
-Use the 'validate' command to check manifests for required cost centre labels and compliance with MegaTech policies.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+Use the 'validate-cost-centre' command to check manifests for required cost centre labels and compliance with MegaTech policies.`,
+	SilenceErrors: true,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -26,18 +29,11 @@ Use the 'validate' command to check manifests for required cost centre labels an
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
+		// errValidationFailed is already communicated via per-resource output; suppress it.
+		// All other errors are genuine failures and should be surfaced to the user.
+		if !errors.Is(err, errValidationFailed) {
+			fmt.Fprintln(os.Stderr, "Error:", err)
+		}
 		os.Exit(1)
 	}
-}
-
-func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.k8s-manifest-validator.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

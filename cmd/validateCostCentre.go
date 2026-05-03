@@ -1,6 +1,3 @@
-/*
-Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -18,9 +15,9 @@ import (
 
 var yearFlag string
 
-// validateCostCentreCmd represents the validateCostCentre command
+// validateCostCentreCmd represents the validate-cost-centre command.
 var validateCostCentreCmd = &cobra.Command{
-	Use:   "validateCostCentre",
+	Use:   "validate-cost-centre",
 	Short: "Validate Kubernetes manifests for the MegaTech cost centre label",
 	Long:  `Reads Kubernetes manifests from stdin and validates that each resource carries a valid metadata.megatech.inc/cost-centre label in the format CC-NNN-YYYY.`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -58,7 +55,7 @@ var validateCostCentreCmd = &cobra.Command{
 		fmt.Printf("  Invalid: %d\n", result.InvalidCount())
 
 		if result.InvalidCount() > 0 {
-			os.Exit(1)
+			return errValidationFailed
 		}
 		return nil
 	},
@@ -66,5 +63,5 @@ var validateCostCentreCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(validateCostCentreCmd)
-	validateCostCentreCmd.Flags().StringVarP(&yearFlag, "year", "y", fmt.Sprintf("%d", time.Now().Year()), "Expected cost centre year (4-digit). Defaults to the current calendar year.")
+	validateCostCentreCmd.Flags().StringVarP(&yearFlag, "year", "y", strconv.Itoa(time.Now().Year()), "Expected cost centre year (4-digit). Defaults to the current calendar year.")
 }

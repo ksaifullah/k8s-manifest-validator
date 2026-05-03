@@ -1,3 +1,4 @@
+// Package validator provides types and logic for running validation checks against Kubernetes manifests.
 package validator
 
 import (

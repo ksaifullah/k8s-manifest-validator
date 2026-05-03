@@ -1,3 +1,4 @@
+// Package manifest provides types and parsing logic for Kubernetes manifest files.
 package manifest
 
 import (
