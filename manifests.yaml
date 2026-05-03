@@ -3,6 +3,7 @@ kind: Namespace
 metadata:
   labels:
     metadata.megatech.inc/cost-centre: CC-071-2025
+    environment: production
   name: payments-service
 ---
 apiVersion: v1
@@ -10,6 +11,7 @@ kind: ServiceAccount
 metadata:
   labels:
     metadata.megatech.inc/cost-centre: CC-071-2024
+    environment: test
   name: payments-service
   namespace: payments-service
 ---
