@@ -62,3 +62,7 @@ We expect:
 - Reasonable coverage of edge cases
 
 You do not need to build complex integration tests.
+
+## Evolution
+
+Update this instructions file as we make new assumptions and implement featurtes.

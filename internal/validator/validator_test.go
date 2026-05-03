@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ksaifullah/go-cli-k8s-manifest-label-validator/internal/manifest"
+	"github.com/ksaifullah/k8s-manifest-validator/internal/manifest"
 )
 
 const testYear = 2026

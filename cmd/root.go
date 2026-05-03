@@ -11,9 +11,9 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "go-cli-k8s-manifest-label-validator",
+	Use:   "k8s-manifest-validator",
 	Short: "A simple Go CLI for validating Kubernetes manifests (Cobra-based)",
-	Long: `go-cli-k8s-manifest-label-validator is a command-line tool built with Cobra for validating Kubernetes manifests at MegaTech.
+	Long: `k8s-manifest-validator is a command-line tool built with Cobra for validating Kubernetes manifests at MegaTech.
 
 Use the 'validate' command to check manifests for required cost centre labels and compliance with MegaTech policies.`,
 	// Uncomment the following line if your bare application
@@ -35,7 +35,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.go-cli-k8s-manifest-label-validator.yaml)")
+	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.k8s-manifest-validator.yaml)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.

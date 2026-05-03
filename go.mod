@@ -1,4 +1,4 @@
-module github.com/ksaifullah/go-cli-k8s-manifest-label-validator
+module github.com/ksaifullah/k8s-manifest-validator
 
 go 1.26.2
 

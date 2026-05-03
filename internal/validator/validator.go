@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ksaifullah/go-cli-k8s-manifest-label-validator/internal/manifest"
+	"github.com/ksaifullah/k8s-manifest-validator/internal/manifest"
 )
 
 // LabelKey is the required MegaTech cost centre label.

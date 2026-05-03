@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ksaifullah/go-cli-k8s-manifest-label-validator/internal/manifest"
-	"github.com/ksaifullah/go-cli-k8s-manifest-label-validator/internal/validator"
+	"github.com/ksaifullah/k8s-manifest-validator/internal/manifest"
+	"github.com/ksaifullah/k8s-manifest-validator/internal/validator"
 	"github.com/spf13/cobra"
 )
 
